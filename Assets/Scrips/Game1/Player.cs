@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _Speed;
     [SerializeField]
+    private float _SpeedUp;
+    [SerializeField]
     private GameObject _LaserPreFab;
     private float _Canfire = -1;
     [SerializeField]
@@ -32,10 +34,34 @@ public class Player : MonoBehaviour
     private AudioSource _LaserAudio;
     [SerializeField]
     private int _score;
+    private CameraShake _CamShakeAnim;
 
+    [SerializeField]
+    private int _Ammo = 15;
+   
+    private int _FullAmmo = 15;
+
+    [SerializeField]
+    private int _ShieldLife = 3;
+
+    [SerializeField]
+    private GameObject _SuperPowerMissile;
+    
+    private bool _MissileIsActive = false;
+    
+    private bool _CanFire = true;
+
+    
 
     void Start()
     {
+       
+        _CamShakeAnim = GameObject.Find("Main Camera").GetComponent<CameraShake>();
+        if(_CamShakeAnim == null)
+        {
+            Debug.LogError("Animator for Cam_Shake is null");
+        }
+
         uiManager = GameObject.Find("Canvas").GetComponent<UiManager>();
         if(uiManager == null)
         {
@@ -43,6 +69,7 @@ public class Player : MonoBehaviour
         }
 
         transform.position = new Vector3(0, 0, 0);
+
         _spawnmanager = GameObject.Find("Spawn_Manager").GetComponent<Spawnmanager>();
         if (_spawnmanager == null)
         {
@@ -53,11 +80,28 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        UpdateAmmo();
         PlayerMovement();
 
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time > _Canfire)
+        if (_MissileIsActive == true && _CanFire == true)
         {
-            LaserFire();
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                uiManager.MissileImgFlashStop();
+                
+                _CanFire = false;
+                Vector3 MissileTransform = new Vector3(Random.Range(-3f, 3f), -7, 0f);
+                Instantiate(_SuperPowerMissile, MissileTransform, Quaternion.identity);
+
+                StartCoroutine("SuperPowerCounter");
+                
+            }
+        }
+      
+     
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time > _Canfire && _Ammo >= 1 && _CanFire == true)
+        {
+          LaserFire();
         }
     }
 
@@ -104,32 +148,69 @@ public class Player : MonoBehaviour
             Instantiate(_TrippleShot, transform.position, Quaternion.identity);
             _LaserAudio.Play();
         }
+
         else
         {
             Instantiate(_LaserPreFab, transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
+            _Ammo -= 1;
+           
             _LaserAudio.Play();
         }
 
     }
 
+    public void AddHealth()
+    {
+        if (_Health == 3 )
+        {
+            return;
+        }
+        else if (_Health <3)
+        {
+            _Health += 1;
+            uiManager.LivesDisplayUpDate(_Health);
+        }
+        if (_Health == 2)
+        {
+            _Engineleft.SetActive(false);
+        }
+        else if (_Health == 3)
+        {
+            _EngineRight.SetActive(false);
+        }
+    }
+    
     public void Damage()
     {
         if (_ShieldIsActive == true)
         {
-            _ShieldIsActive = false;
-            _ShieldPowerUp.SetActive(false);
+            _ShieldLife -= 1;
+
+            if (_ShieldLife == 0)
+            {
+                uiManager.UpdateShieldSprite(_ShieldLife);
+                _ShieldPowerUp.SetActive(false);
+                _ShieldIsActive = false;
+                _ShieldLife = 3;
+            }
+           
+            uiManager.UpdateShieldSprite(_ShieldLife);
             return;
         }
         else
         {
             _Health--;
+
             if (_Health == 2)
             {
-                _Engineleft.SetActive(true);
+                _CamShakeAnim.CamShake();
+                _EngineRight.SetActive(true);
             }
             else if (_Health == 1)
             {
-                _EngineRight.SetActive(true);
+                _CamShakeAnim.CamShake();
+                _Engineleft.SetActive(true);
+                
             }
 
             uiManager.LivesDisplayUpDate(_Health);
@@ -170,6 +251,7 @@ public class Player : MonoBehaviour
     public void ShieldPowerUp()
     {
         _ShieldIsActive = true;
+        uiManager.ShieldImgActive();
         _ShieldPowerUp.SetActive(true);
     }
 
@@ -178,4 +260,42 @@ public class Player : MonoBehaviour
         _score += 10;
         uiManager.UpdateScore(_score);
     }
+    private void TestBoost()
+    {
+        uiManager.BoostDrop();
+    }
+   
+    public void IncreaseSpeed()
+    {
+           _Speed = _SpeedUp;
+    }
+    public void DecreaseSpeed()
+    {
+        _Speed = 8;
+    }
+
+      
+
+    private void UpdateAmmo()
+    {
+        uiManager.AmmoUpdate(_Ammo);
+    }
+   
+    public void AmmoReload()
+    {
+        _Ammo = _FullAmmo;
+    }
+
+    public void SuperPowerMissile()
+    {
+       _MissileIsActive = true;
+    }
+    
+    IEnumerator SuperPowerCounter()
+    {
+        yield return new WaitForSeconds(5f);
+        _MissileIsActive = false;
+        _CanFire = true;
+    }
+    
 }

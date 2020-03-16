@@ -10,7 +10,6 @@ public class Laser : MonoBehaviour
     void Update()
     {
         transform.Translate(0, _LaserSpeed * Time.deltaTime, 0);
-        
 
         if (transform.position.y >= 7f)
         {

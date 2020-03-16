@@ -12,11 +12,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Application.Quit();
-            MouseControl();
-        }
+        EscControl();
     }
 
     private void MouseControl()
@@ -25,4 +21,12 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
     }
 
+    private void EscControl()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+            MouseControl();
+        }
+    }
 }

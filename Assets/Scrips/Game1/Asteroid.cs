@@ -5,10 +5,14 @@ using UnityEngine;
 public class Asteroid : MonoBehaviour
 {   [SerializeField]
     private float _Speed;
+
     [SerializeField]
     private GameObject _Explosion;
+
     private SpriteRenderer _spriteRenderer;
+
     private Spawnmanager _Spawnmanager;
+
     [SerializeField]
     private AudioSource _ExplosionAudio;
 

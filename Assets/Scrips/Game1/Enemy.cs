@@ -6,16 +6,21 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _Speed;
+
     private Player player;
+
     private Animator _Anim;
+
     private SpriteRenderer _Renderer;
+
     private BoxCollider2D _BoxCollider2D;
+
     [SerializeField]
     private AudioSource _ExplosionAudio;
 
     [SerializeField]
     private GameObject _EnemyLaser;
-   
+
 
     private void Start()
     {
@@ -72,8 +77,7 @@ public class Enemy : MonoBehaviour
             _BoxCollider2D.enabled = false;
             Destroy(this.gameObject,2.8f);
         }
-
-        if (other.gameObject.tag == "Laser")
+        else if (other.gameObject.tag == "Laser")
         {
 
             _Anim.SetTrigger("OnEnemyDeath");
@@ -83,7 +87,18 @@ public class Enemy : MonoBehaviour
             player.AddScore();
             Destroy(this.gameObject,2.8f);
         }
+       
     }
+
+    public void MissileDestroy()
+    {
+        _Anim.SetTrigger("OnEnemyDeath");
+            _ExplosionAudio.Play();
+            _BoxCollider2D.enabled = false;
+            Destroy(this.gameObject, 2.8f);
+    }
+
+    
    
     IEnumerator EnemyShoot()
     {
